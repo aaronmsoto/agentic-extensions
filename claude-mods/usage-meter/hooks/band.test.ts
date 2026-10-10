@@ -63,3 +63,26 @@ test("the row reads the desktop app's usage card, a model's weekly window once i
   expect(await ui.find({ type: 'Text', text: /Fable/ })).toBeDefined()
   await ui.unmount()
 })
+
+test('the Usg label takes the color of the worst window', async ($, on) => {
+  const clock = mock.clock(on, { now: Date.parse('2026-10-10T12:00:00Z') })
+  on('ui.status', () => ({ value: undefined }))
+  on('ui.toast', () => ({ value: undefined }))
+  on('mcp.call', () => ({ deny: 'no app here' }))
+  on('ui.render', { component: 'AbovePrompt' }, () => h('Box', {}))
+  on('session.measure', (_$, e) => ({ changed: e.changed }))
+  const now = clock.now()
+  await $.session.measure({
+    context: { window: 200_000 },
+    rateLimits: [
+      { kind: 'five_hour', percentUsed: 10, resetsAt: new Date(now + 2.5 * 3_600_000).toISOString() },
+      { kind: 'seven_day', percentUsed: 70, resetsAt: new Date(now + 3.5 * 86_400_000).toISOString() },
+    ],
+    changed: ['rateLimits'],
+  })
+
+  const ui = await $.ui.mount({ plugin: 'usage-meter', surface: 'desktop', ...BAND })
+  const label = await ui.find({ type: 'Text', text: /^Usg/ })
+  expect(label?.props.color).toBe('#f0883e')
+  await ui.unmount()
+})

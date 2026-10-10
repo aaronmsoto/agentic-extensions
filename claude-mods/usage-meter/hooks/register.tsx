@@ -117,6 +117,9 @@ export const register: Register = on => {
       .filter(p => isMain(p) || p.level !== 'green')
     if (paces.length === 0) return below
 
+    // The label takes the color of the worst window, as Ctx takes its fill's.
+    const worst = paces.reduce<Level>((most, p) => (RANK[p.level] > RANK[most] ? p.level : most), 'green')
+
     const { Box, Text } = $.ui.resolve(e)
     // A window's segment: its name, a bar filled to the use with ┃ at how far into
     // the window you are, then used→projected at reset and the time to reset.
@@ -138,7 +141,9 @@ export const register: Register = on => {
     )
     const mine = (
       <Box key="usage-meter" flexDirection="row" flexWrap="wrap">
-        <Text dimColor>{'Usg'.padEnd(5)}</Text>
+        <Text color={COLORS[worst]} bold>
+          {'Usg'.padEnd(5)}
+        </Text>
         {paces.map(segment)}
       </Box>
     )

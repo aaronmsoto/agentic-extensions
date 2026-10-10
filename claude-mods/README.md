@@ -15,7 +15,7 @@ Small Claude Code mods (function-hook plugins) that stay out of the way.
 
 ### Reading the usage bar
 
-In the desktop app the figures come from the app's own usage card (5-hour, weekly, and each model's weekly limit), re-read every few minutes; elsewhere from the session's rate-limit readings. A model's weekly limit joins the row only once it leaves green.
+In the desktop app the figures come from the app's own usage card (5-hour, weekly, and each model's weekly limit), re-read every few minutes; elsewhere from the session's rate-limit readings. A model's weekly limit joins the row only once it leaves green. The `Usg` label takes the color of the worst window.
 
 The fill is how much of the limit you have used; the `┃` mark is how far through the window you are. Fill that stays left of the mark is under pace.
 `used→projected` is your use now and at reset if you keep the pace so far; `↻` is the time to reset.
