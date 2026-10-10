@@ -35,7 +35,8 @@ test('the band draws a row per limit window on terminal and desktop', async ($, 
     expect(await ui.find({ type: 'Text', text: /Wk/ })).toBeDefined()
     await ui.unmount()
   }
-  expect(shown.at(-1)).toMatch(/%/)
+  // No status line: the band is the only display.
+  expect(shown.at(-1)).toBe(undefined)
 })
 
 test("the row reads the desktop app's usage card, a model's weekly window once it leaves green", async ($, on) => {

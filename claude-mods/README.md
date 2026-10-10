@@ -10,7 +10,7 @@ Small Claude Code mods (function-hook plugins) that stay out of the way.
 ### Where they show
 
 - **Desktop Code tab and terminal:** a band directly above the prompt box, `Ctx` on top and `Usg` under it, from the first reply of a session on (the figures arrive with each reply). Collapse it with its `[-]`.
-- **Terminal and mobile:** a status line under the prompt, e.g. `🟢 5h 30% → 60%  🟡 Week 40% → 88%`.
+- **Terminal and mobile:** `context-meter` also pins a status line under the prompt, e.g. `🟢 Context 42%`; `usage-meter` draws only its band.
 - **Anywhere:** type `/usage-meter` or `/context-meter` for a text readout.
 
 ### Reading the usage bar

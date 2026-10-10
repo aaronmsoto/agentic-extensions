@@ -24,7 +24,6 @@ export const COLORS: Record<Level, string> = {
   red: '#f85149',
 }
 
-export const DOTS: Record<Level, string> = { green: '🟢', yellow: '🟡', orange: '🟠', red: '🔴' }
 
 const NAMES: Record<string, string> = { five_hour: '5h', seven_day: 'Wk', spend_limit: 'Spend' }
 
@@ -131,9 +130,3 @@ export const detail = (p: Pace) => {
 
   return parts.join(' · ')
 }
-
-/** One plain line, for the status line and surfaces with no band. */
-export const summary = (paces: Pace[]) =>
-  paces
-    .map(p => `${DOTS[p.level]} ${p.name} ${Math.round(p.used)}%${p.projected === undefined ? '' : ` → ${Math.round(p.projected)}%`}`)
-    .join('  ')

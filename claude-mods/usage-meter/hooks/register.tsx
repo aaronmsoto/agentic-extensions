@@ -2,7 +2,7 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 import type { Reading } from '../types'
-import { bar, brief, COLORS, detail, duration, isMain, pace, summary, type Level, type Pace } from './pace'
+import { bar, brief, COLORS, detail, duration, isMain, pace, type Level, type Pace } from './pace'
 import { fromAppUsage } from './source'
 
 const reading = atom({ plugin: 'usage-meter', key: 'reading' } as const, null)
@@ -38,7 +38,8 @@ async function record($: EngineInterface, next: Reading) {
   await update($, clock, () => now)
 
   const paces = next.rateLimits.map(limit => pace(limit, now))
-  $.ui.status(paces.length > 0 ? summary(paces) : undefined)
+  // The band above the prompt is the one display; clear any line an older version pinned.
+  $.ui.status(undefined)
 
   // One toast each time a window climbs into orange or red; quiet as it falls back.
   for (const p of paces) {
