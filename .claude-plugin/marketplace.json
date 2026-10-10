@@ -1,8 +1,21 @@
 {
   "name": "agentic-extensions",
-  "owner": { "name": "Aaron Soto" },
+  "owner": {
+    "name": "Aaron Soto"
+  },
+  "metadata": {
+    "description": "Aaron Soto's Claude Code extensions."
+  },
   "plugins": [
-    { "name": "context-meter", "source": "./claude-mods/context-meter", "description": "A quiet status line showing how full the context window is." },
-    { "name": "usage-meter", "source": "./claude-mods/usage-meter", "description": "A quiet status line showing plan rate-limit usage and session cost." }
+    {
+      "name": "context-meter",
+      "source": "./claude-mods/context-meter",
+      "description": "How full the context window is, as a colored bar above the prompt."
+    },
+    {
+      "name": "usage-meter",
+      "source": "./claude-mods/usage-meter",
+      "description": "Your 5-hour and weekly limits as pace bars above the prompt."
+    }
   ]
 }

@@ -4,8 +4,29 @@ Small Claude Code mods (function-hook plugins) that stay out of the way.
 
 | Mod | What it shows |
 | --- | --- |
-| `context-meter` | A status line such as `ctx 42% · 84k/200k`; one toast when context passes 80%. |
-| `usage-meter` | A status line such as `usage 5h 23% ↻2h14m · 7d 41% ↻3d5h · $1.87`; one toast when a limit window passes 90%. |
+| `context-meter` | `Ctx  ████████░░░░░░░░░░░░ 42% · 84k of 200k tokens`; one toast when context passes 80%. |
+| `usage-meter` | One pace bar per limit window, e.g. `5h   ████████████┃░░░░░░░ 60% used · 50% through window · on pace to hit limit · resets in 2h 30m`. |
+
+### Where they show
+
+- **Desktop Code tab and terminal:** a band directly above the prompt box, from the first reply of a session on (the figures arrive with each reply). Collapse it with its `[-]`.
+- **Terminal and mobile:** a status line under the prompt, e.g. `🟢 5h 30% → 60%  🟡 Week 40% → 88%`.
+- **Anywhere:** type `/usage-meter` or `/context-meter` for a text readout.
+
+### Reading the usage bar
+
+The fill is how much of the limit you have used; the `┃` mark is how far through the window you are. Fill that stays left of the mark is under pace.
+`→ N% at reset` projects your use at reset if you keep the pace so far.
+
+| Color | Meaning |
+| --- | --- |
+| 🟢 green | Projected under 85% at reset: tracking at or below proportional use. |
+| 🟡 yellow | Projected 85–100% at reset: near proportional use. |
+| 🟠 orange | Projected past 100%: on pace to hit the limit before the window resets. |
+| 🔴 red | 95% or more of the limit used, blocked included. |
+
+Context colors: green under 60%, yellow 60–80%, orange 80–95%, red 95%+.
+Thresholds are the constants at the top of `hooks/pace.ts` and `hooks/fill.ts`.
 
 ## Install
 
@@ -37,5 +58,5 @@ Cloud sessions don't see your machine's settings. To load the mods there, add th
 
 ## Develop
 
-Each mod is `hooks/register.ts`, loaded via `hooks/hooks.json`. Run one from its folder with
-`claude --plugin-dir claude-mods/<mod>`, and check it with `claude plugin validate claude-mods/<mod>`.
+Each mod is `hooks/register.tsx`, loaded via `hooks/hooks.json`. Run one from its folder with
+`claude --plugin-dir claude-mods/<mod>`, check it with `claude plugin validate claude-mods/<mod>`, and run its tests with `claude plugin test claude-mods/<mod>`.

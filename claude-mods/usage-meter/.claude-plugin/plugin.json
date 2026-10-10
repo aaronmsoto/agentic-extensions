@@ -1,1 +1,9 @@
-{ "name": "usage-meter", "version": "0.1.0", "description": "A quiet status line showing plan rate-limit usage and session cost." }
+{
+  "name": "usage-meter",
+  "version": "0.2.0",
+  "description": "Your 5-hour and weekly limits as pace bars above the prompt: how much is used against how far into the window you are.",
+  "author": {
+    "name": "Aaron Soto"
+  },
+  "types": "./types/index.d.ts"
+}
