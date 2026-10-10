@@ -28,7 +28,7 @@ The fill is how much of the limit you have used; the `┃` mark is how far throu
 | 🔴 red | 95% or more of the limit used, blocked included. |
 
 Context colors: green under 60%, yellow 60–80%, orange 80–95%, red 95%+.
-Both rows stretch their bars so each row spans the band's full width.
+Each row is one line that never wraps: the bars stretch to fill the band, and where it is narrower than measured they give up columns first, so the label and figures always stay on the line.
 Thresholds are the constants at the top of `hooks/pace.ts` and `hooks/fill.ts`.
 
 ## Install

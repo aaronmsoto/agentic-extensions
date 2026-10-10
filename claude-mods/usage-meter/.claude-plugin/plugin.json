@@ -1,6 +1,6 @@
 {
   "name": "usage-meter",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Your 5-hour and weekly limits as pace bars above the prompt: how much is used against how far into the window you are.",
   "author": {
     "name": "Aaron Soto"

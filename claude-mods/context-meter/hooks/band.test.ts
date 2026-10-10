@@ -61,7 +61,7 @@ test('the band shows where the input came from once a response reported it', asy
   await ui.unmount()
 })
 
-test('the bar stretches so the row spans the band', async ($, on) => {
+test('the bar stretches so the row spans the band, less two spare columns', async ($, on) => {
   on('ui.status', () => ({ value: undefined }))
   on('ui.toast', () => ({ value: undefined }))
   on('ui.render', { component: 'AbovePrompt' }, () => h('Box', {}))
@@ -70,7 +70,7 @@ test('the bar stretches so the row spans the band', async ($, on) => {
 
   for (const columns of [80, 140]) {
     const ui = await $.ui.mount({ plugin: 'context-meter', surface: 'desktop', ...BAND, props: { ...BAND.props, bodyColumns: columns } })
-    expect((await ui.find({ key: 'context-meter' }))?.text.length).toBe(columns)
+    expect((await ui.find({ key: 'context-meter' }))?.text.length).toBe(columns - 2)
     await ui.unmount()
   }
 })

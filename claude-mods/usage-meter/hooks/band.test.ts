@@ -116,7 +116,7 @@ test('the status line is pinned only while the mobile app is attached', async ($
   expect(shown.at(-1)).toBe('Usg  🟢 5h 30%→60% ↻2h30m')
 })
 
-test('the bars stretch so the row spans the band', async ($, on) => {
+test('the bars stretch so the row spans the band, less two spare columns', async ($, on) => {
   const clock = mock.clock(on, { now: Date.parse('2026-10-10T12:00:00Z') })
   on('ui.status', () => ({ value: undefined }))
   on('ui.toast', () => ({ value: undefined }))
@@ -142,8 +142,8 @@ test('the bars stretch so the row spans the band', async ($, on) => {
     })
     const row = await ui.find({ key: 'usage-meter' })
     const drawn = (row?.text ?? '').length + 2 // the gap between the two windows is a margin, not text
-    expect(drawn).toBeGreaterThanOrEqual(columns - 1)
-    expect(drawn).toBeLessThanOrEqual(columns)
+    expect(drawn).toBeGreaterThanOrEqual(columns - 3)
+    expect(drawn).toBeLessThanOrEqual(columns - 2)
     await ui.unmount()
   }
 })

@@ -1,6 +1,6 @@
 {
   "name": "context-meter",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "How full the context window is, as a colored bar above the prompt.",
   "author": {
     "name": "Aaron Soto"

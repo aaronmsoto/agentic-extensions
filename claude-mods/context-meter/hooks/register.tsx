@@ -9,6 +9,8 @@ const live = atom({ plugin: 'context-meter', key: 'context' } as const, null)
 const inputSplit = atom({ plugin: 'context-meter', key: 'split' } as const, null)
 
 const LABEL = 5
+/** Columns left free at the row's end, so a surface that measures a little narrower still fits it. */
+const RESERVE = 2
 /** The bar never shrinks below this; on a narrow band the text wraps instead. */
 const MIN_BAR = 10
 
@@ -92,16 +94,26 @@ export const register: Register = on => {
     const color = COLORS[levelOf(percent)]
     // The bar takes every column the label and the text leave, so the row spans the band.
     const text = ` ${detail(context, percent)}${split === null ? '' : `  ${splitDetail(split)}`}`
-    const width = Math.max(MIN_BAR, e.props.bodyColumns - LABEL - text.length)
+    const width = Math.max(MIN_BAR, e.props.bodyColumns - LABEL - text.length - RESERVE)
+    // One line, never wrapped: label and figures keep their width, and the bar,
+    // in a box clipped to one row, gives up columns first where the band is narrower.
     const mine = (
-      <Box key="context-meter" flexDirection="row" flexWrap="wrap">
-        <Text color={color} bold>
-          {'Ctx'.padEnd(LABEL)}
-        </Text>
-        {segments(percent, split, width).map(cell =>
-          cell.tone === 'empty' ? <Text dimColor>{cell.text}</Text> : <Text color={color}>{cell.text}</Text>,
-        )}
-        <Text dimColor>{text}</Text>
+      <Box key="context-meter" flexDirection="row" flexWrap="nowrap">
+        <Box flexShrink={0}>
+          <Text color={color} bold>
+            {'Ctx'.padEnd(LABEL)}
+          </Text>
+        </Box>
+        <Box flexGrow={1} flexShrink={1} minWidth={0} height={1} overflow="hidden">
+          <Text>
+            {segments(percent, split, width).map(cell =>
+              cell.tone === 'empty' ? <Text dimColor>{cell.text}</Text> : <Text color={color}>{cell.text}</Text>,
+            )}
+          </Text>
+        </Box>
+        <Box flexShrink={0}>
+          <Text dimColor>{text}</Text>
+        </Box>
       </Box>
     )
 

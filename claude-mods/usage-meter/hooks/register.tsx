@@ -9,6 +9,8 @@ const reading = atom({ plugin: 'usage-meter', key: 'reading' } as const, null)
 const clock = atom({ plugin: 'usage-meter', key: 'now' } as const, 0)
 
 const LABEL = 5
+/** Columns left free at the row's end, so a surface that measures a little narrower still fits it. */
+const RESERVE = 2
 const GAP = 2
 /** A bar never shrinks below this; on a narrow band the row wraps instead. */
 const MIN_BAR = 6
@@ -149,32 +151,53 @@ export const register: Register = on => {
       paces.reduce((sum, p) => sum + p.name.length + 1 + 1 + brief(p).length, 0) +
       GAP * (paces.length - 1)
     const bars = paces.filter(isMain).length
-    const width = bars === 0 ? 0 : Math.max(MIN_BAR, Math.floor((e.props.bodyColumns - fixed) / bars))
+    const width = bars === 0 ? 0 : Math.max(MIN_BAR, Math.floor((e.props.bodyColumns - fixed - RESERVE) / bars))
 
     const { Box, Text } = $.ui.resolve(e)
     // A window's segment: its name, a bar filled to the use with ┃ at how far into
     // the window you are, then used→projected at reset and the time to reset.
+    // One line, never wrapped: names and figures keep their width, and each bar, in a
+    // box clipped to one row, gives up columns first where the band is narrower.
     const segment = (p: Pace, i: number) => (
-      <Box key={`usage-${p.kind}`} flexDirection="row" marginRight={i < paces.length - 1 ? GAP : 0}>
-        <Text color={COLORS[p.level]} bold>
-          {p.name}{' '}
-        </Text>
-        {isMain(p) &&
-          bar(p, width).map(cell =>
-            cell.tone === 'empty' ? (
-              <Text dimColor>{cell.text}</Text>
-            ) : (
-              <Text color={cell.tone === 'mark' ? 'text' : COLORS[p.level]}>{cell.text}</Text>
-            ),
-          )}
-        <Text color={COLORS[p.level]}> {brief(p)}</Text>
+      <Box
+        key={`usage-${p.kind}`}
+        flexDirection="row"
+        flexWrap="nowrap"
+        flexGrow={isMain(p) ? 1 : 0}
+        flexShrink={isMain(p) ? 1 : 0}
+        minWidth={0}
+        marginRight={i < paces.length - 1 ? GAP : 0}
+      >
+        <Box flexShrink={0}>
+          <Text color={COLORS[p.level]} bold>
+            {p.name}{' '}
+          </Text>
+        </Box>
+        {isMain(p) && (
+          <Box flexGrow={1} flexShrink={1} minWidth={0} height={1} overflow="hidden">
+            <Text>
+              {bar(p, width).map(cell =>
+                cell.tone === 'empty' ? (
+                  <Text dimColor>{cell.text}</Text>
+                ) : (
+                  <Text color={cell.tone === 'mark' ? 'text' : COLORS[p.level]}>{cell.text}</Text>
+                ),
+              )}
+            </Text>
+          </Box>
+        )}
+        <Box flexShrink={0}>
+          <Text color={COLORS[p.level]}> {brief(p)}</Text>
+        </Box>
       </Box>
     )
     const mine = (
-      <Box key="usage-meter" flexDirection="row" flexWrap="wrap">
-        <Text color={COLORS[worst]} bold>
-          {'Usg'.padEnd(LABEL)}
-        </Text>
+      <Box key="usage-meter" flexDirection="row" flexWrap="nowrap">
+        <Box flexShrink={0}>
+          <Text color={COLORS[worst]} bold>
+            {'Usg'.padEnd(LABEL)}
+          </Text>
+        </Box>
         {paces.map(segment)}
       </Box>
     )
