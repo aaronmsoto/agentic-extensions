@@ -130,3 +130,12 @@ export const detail = (p: Pace) => {
 
   return parts.join(' · ')
 }
+
+export const DOTS: Record<Level, string> = { green: '🟢', yellow: '🟡', orange: '🟠', red: '🔴' }
+
+/** The row as one plain line, for the status line the mobile app draws under the prompt. */
+export const summary = (paces: Pace[]) =>
+  `Usg  ${paces
+    .filter(p => isMain(p) || p.level !== 'green')
+    .map(p => `${DOTS[p.level]} ${p.name} ${brief(p)}`)
+    .join(' · ')}`

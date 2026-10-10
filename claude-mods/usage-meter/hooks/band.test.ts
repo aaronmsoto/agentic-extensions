@@ -87,3 +87,31 @@ test('the Usg label takes the color of the worst window', async ($, on) => {
   expect(label?.props.color).toBe('#f0883e')
   await ui.unmount()
 })
+
+test('the status line is pinned only while the mobile app is attached', async ($, on) => {
+  const clock = mock.clock(on, { now: Date.parse('2026-10-10T12:00:00Z') })
+  const shown: (string | undefined)[] = []
+  on('ui.status', (_$, e) => {
+    shown.push(e.text)
+
+    return { value: undefined }
+  })
+  on('ui.toast', () => ({ value: undefined }))
+  on('mcp.call', () => ({ deny: 'no app here' }))
+  on('session.measure', (_$, e) => ({ changed: e.changed }))
+  on('session.attach', (_$, e) => ({ clientId: e.clientId }))
+  let surfaces: ('desktop' | 'mobile')[] = ['desktop']
+  on('session.surfaces', () => ({ value: surfaces }))
+
+  const now = clock.now()
+  await $.session.measure({
+    context: { window: 200_000 },
+    rateLimits: [{ kind: 'five_hour', percentUsed: 30, resetsAt: new Date(now + 2.5 * 3_600_000).toISOString() }],
+    changed: ['rateLimits'],
+  })
+  expect(shown.at(-1)).toBe(undefined)
+
+  surfaces = ['desktop', 'mobile']
+  await $.session.attach({ surface: 'mobile', clientId: 'mobile:default' })
+  expect(shown.at(-1)).toBe('Usg  🟢 5h 30%→60% ↻2h30m')
+})

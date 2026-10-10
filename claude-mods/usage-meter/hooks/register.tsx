@@ -2,7 +2,7 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 import type { Reading } from '../types'
-import { bar, brief, COLORS, detail, duration, isMain, pace, type Level, type Pace } from './pace'
+import { bar, brief, COLORS, detail, duration, isMain, pace, summary, type Level, type Pace } from './pace'
 import { fromAppUsage } from './source'
 
 const reading = atom({ plugin: 'usage-meter', key: 'reading' } as const, null)
@@ -38,8 +38,10 @@ async function record($: EngineInterface, next: Reading) {
   await update($, clock, () => now)
 
   const paces = next.rateLimits.map(limit => pace(limit, now))
-  // The band above the prompt is the one display; clear any line an older version pinned.
-  $.ui.status(undefined)
+  // The band above the prompt draws on desktop and terminal only; the mobile app
+  // gets the row as a status line under the prompt, pinned only while it is attached.
+  const onPhone = (await $.session.surfaces()).includes('mobile')
+  $.ui.status(onPhone && paces.length > 0 ? summary(paces) : undefined)
 
   // One toast each time a window climbs into orange or red; quiet as it falls back.
   for (const p of paces) {
@@ -93,6 +95,23 @@ export const register: Register = on => {
     await refresh($, { rateLimits: e.rateLimits, cost: e.cost })
 
     return next(e)
+  })
+
+  // A phone joining or leaving the session pins or clears its status line.
+  on('session.attach', async ($, e, next) => {
+    const result = await next(e)
+    const kept = await read($, reading)
+    if (kept !== null) await record($, kept)
+
+    return result
+  })
+
+  on('session.detach', async ($, e, next) => {
+    const result = await next(e)
+    const kept = await read($, reading)
+    if (kept !== null) await record($, kept)
+
+    return result
   })
 
   on('command.run', { command: 'usage-meter' }, async $ => {
