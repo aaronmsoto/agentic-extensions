@@ -1,13 +1,16 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { ContextReading } from '../types'
+import type { ContextReading, InputSplit } from '../types'
 
-import { COLORS, detail, filledOf, levelOf, ORANGE_FROM, percentOf } from './fill'
+import { COLORS, detail, levelOf, ORANGE_FROM, percentOf, segments, splitDetail } from './fill'
 
 const live = atom({ plugin: 'context-meter', key: 'context' } as const, null)
+const inputSplit = atom({ plugin: 'context-meter', key: 'split' } as const, null)
 
-const BAR_WIDTH = 20
+const LABEL = 5
+/** The bar never shrinks below this; on a narrow band the text wraps instead. */
+const MIN_BAR = 10
 
 let hasWarned = false
 
@@ -48,15 +51,31 @@ export const register: Register = on => {
     return next(e)
   })
 
+  // Each main-loop response reports its input by source; the last one is the context's make-up.
+  on('turn.step', async function* ($, e, next) {
+    const response = yield* next(e)
+    if (e.agentId === undefined && response.usage !== null) {
+      const split: InputSplit = {
+        cacheRead: response.usage.cache_read_input_tokens,
+        cacheWrite: response.usage.cache_creation_input_tokens,
+        uncached: response.usage.input_tokens,
+      }
+      await update($, inputSplit, () => split)
+    }
+
+    return response
+  })
+
   on('command.run', { command: 'context-meter' }, async $ => {
     const context = await read($, live)
+    const split = await read($, inputSplit)
     const percent = context === null ? undefined : percentOf(context)
 
     return {
       text:
         context === null || percent === undefined
           ? 'No context reading yet: it arrives with the first reply in a session.'
-          : `${levelOf(percent).toUpperCase()} Context: ${detail(context, percent)}`,
+          : `${levelOf(percent).toUpperCase()} Context: ${detail(context, percent)}${split === null ? '' : `\n${splitDetail(split)}`}`,
     }
   })
 
@@ -69,16 +88,20 @@ export const register: Register = on => {
     if (context === null || percent === undefined) return below
 
     const { Box, Text } = $.ui.resolve(e)
+    const split = await read($, inputSplit)
     const color = COLORS[levelOf(percent)]
-    const filled = filledOf(percent, BAR_WIDTH)
+    // The bar takes every column the label and the text leave, so the row spans the band.
+    const text = ` ${detail(context, percent)}${split === null ? '' : `  ${splitDetail(split)}`}`
+    const width = Math.max(MIN_BAR, e.props.bodyColumns - LABEL - text.length)
     const mine = (
-      <Box key="context-meter" flexDirection="row">
+      <Box key="context-meter" flexDirection="row" flexWrap="wrap">
         <Text color={color} bold>
-          {'Ctx'.padEnd(5)}
+          {'Ctx'.padEnd(LABEL)}
         </Text>
-        <Text color={color}>{'█'.repeat(filled)}</Text>
-        <Text dimColor>{'░'.repeat(BAR_WIDTH - filled)}</Text>
-        <Text dimColor> {detail(context, percent)}</Text>
+        {segments(percent, split, width).map(cell =>
+          cell.tone === 'empty' ? <Text dimColor>{cell.text}</Text> : <Text color={color}>{cell.text}</Text>,
+        )}
+        <Text dimColor>{text}</Text>
       </Box>
     )
 

@@ -4,7 +4,7 @@ Small Claude Code mods (function-hook plugins) that stay out of the way.
 
 | Mod | What it shows |
 | --- | --- |
-| `context-meter` | `Ctx  ████████░░░░░░░░░░░░ 42% · 84k of 200k tokens`; one toast when context passes 80%. |
+| `context-meter` | `Ctx  ███▓▒░░░░░░░░░░░░░ 18% · 178k of 1.0M tokens  █ cached 171k  ▓ written 5k  ▒ new 2k`: the fill split by where the last response's input came from (cache read, cache written, uncached); one toast when context passes 80%. |
 | `usage-meter` | One row under `Ctx`: a pace bar per window, e.g. `Usg  5h ┃░░░░░░░░░░░ 1%→20% ↻4h55m  Wk █████████┃░░ 53%→66% ↻1d9h  Fable 100% ↻1d9h`. |
 
 ### Where they show
@@ -28,6 +28,7 @@ The fill is how much of the limit you have used; the `┃` mark is how far throu
 | 🔴 red | 95% or more of the limit used, blocked included. |
 
 Context colors: green under 60%, yellow 60–80%, orange 80–95%, red 95%+.
+Both rows stretch their bars so each row spans the band's full width.
 Thresholds are the constants at the top of `hooks/pace.ts` and `hooks/fill.ts`.
 
 ## Install

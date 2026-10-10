@@ -115,3 +115,35 @@ test('the status line is pinned only while the mobile app is attached', async ($
   await $.session.attach({ surface: 'mobile', clientId: 'mobile:default' })
   expect(shown.at(-1)).toBe('Usg  🟢 5h 30%→60% ↻2h30m')
 })
+
+test('the bars stretch so the row spans the band', async ($, on) => {
+  const clock = mock.clock(on, { now: Date.parse('2026-10-10T12:00:00Z') })
+  on('ui.status', () => ({ value: undefined }))
+  on('ui.toast', () => ({ value: undefined }))
+  on('mcp.call', () => ({ deny: 'no app here' }))
+  on('ui.render', { component: 'AbovePrompt' }, () => h('Box', {}))
+  on('session.measure', (_$, e) => ({ changed: e.changed }))
+  const now = clock.now()
+  await $.session.measure({
+    context: { window: 200_000 },
+    rateLimits: [
+      { kind: 'five_hour', percentUsed: 10, resetsAt: new Date(now + 2.5 * 3_600_000).toISOString() },
+      { kind: 'seven_day', percentUsed: 40, resetsAt: new Date(now + 3.5 * 86_400_000).toISOString() },
+    ],
+    changed: ['rateLimits'],
+  })
+
+  for (const columns of [100, 160]) {
+    const ui = await $.ui.mount({
+      plugin: 'usage-meter',
+      surface: 'desktop',
+      ...BAND,
+      props: { ...BAND.props, bodyColumns: columns },
+    })
+    const row = await ui.find({ key: 'usage-meter' })
+    const drawn = (row?.text ?? '').length + 2 // the gap between the two windows is a margin, not text
+    expect(drawn).toBeGreaterThanOrEqual(columns - 1)
+    expect(drawn).toBeLessThanOrEqual(columns)
+    await ui.unmount()
+  }
+})

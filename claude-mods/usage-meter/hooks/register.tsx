@@ -8,7 +8,10 @@ import { fromAppUsage } from './source'
 const reading = atom({ plugin: 'usage-meter', key: 'reading' } as const, null)
 const clock = atom({ plugin: 'usage-meter', key: 'now' } as const, 0)
 
-const BAR_WIDTH = 12
+const LABEL = 5
+const GAP = 2
+/** A bar never shrinks below this; on a narrow band the row wraps instead. */
+const MIN_BAR = 6
 const POLL_MS = 5 * 60_000
 const MIN_FETCH_MS = 60_000
 const RANK: Record<Level, number> = { green: 0, yellow: 1, orange: 2, red: 3 }
@@ -140,16 +143,24 @@ export const register: Register = on => {
     // The label takes the color of the worst window, as Ctx takes its fill's.
     const worst = paces.reduce<Level>((most, p) => (RANK[p.level] > RANK[most] ? p.level : most), 'green')
 
+    // The bars share every column the label, names and figures leave, so the row spans the band.
+    const fixed =
+      LABEL +
+      paces.reduce((sum, p) => sum + p.name.length + 1 + 1 + brief(p).length, 0) +
+      GAP * (paces.length - 1)
+    const bars = paces.filter(isMain).length
+    const width = bars === 0 ? 0 : Math.max(MIN_BAR, Math.floor((e.props.bodyColumns - fixed) / bars))
+
     const { Box, Text } = $.ui.resolve(e)
     // A window's segment: its name, a bar filled to the use with ┃ at how far into
     // the window you are, then used→projected at reset and the time to reset.
-    const segment = (p: Pace) => (
-      <Box key={`usage-${p.kind}`} flexDirection="row" marginRight={2}>
+    const segment = (p: Pace, i: number) => (
+      <Box key={`usage-${p.kind}`} flexDirection="row" marginRight={i < paces.length - 1 ? GAP : 0}>
         <Text color={COLORS[p.level]} bold>
           {p.name}{' '}
         </Text>
         {isMain(p) &&
-          bar(p, BAR_WIDTH).map(cell =>
+          bar(p, width).map(cell =>
             cell.tone === 'empty' ? (
               <Text dimColor>{cell.text}</Text>
             ) : (
@@ -162,7 +173,7 @@ export const register: Register = on => {
     const mine = (
       <Box key="usage-meter" flexDirection="row" flexWrap="wrap">
         <Text color={COLORS[worst]} bold>
-          {'Usg'.padEnd(5)}
+          {'Usg'.padEnd(LABEL)}
         </Text>
         {paces.map(segment)}
       </Box>
