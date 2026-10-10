@@ -26,7 +26,11 @@ export const COLORS: Record<Level, string> = {
 
 export const DOTS: Record<Level, string> = { green: '🟢', yellow: '🟡', orange: '🟠', red: '🔴' }
 
-const NAMES: Record<string, string> = { five_hour: '5h', seven_day: 'Week', spend_limit: 'Spend' }
+const NAMES: Record<string, string> = { five_hour: '5h', seven_day: 'Wk', spend_limit: 'Spend' }
+
+/** `seven_day:<model>` is a per-model weekly window, named by its model. */
+const baseOf = (kind: string) => kind.split(':')[0] ?? kind
+const nameOf = (kind: string) => NAMES[kind] ?? (kind.includes(':') ? kind.slice(kind.indexOf(':') + 1) : kind)
 const WINDOW_MS: Record<string, number> = { five_hour: 5 * 3_600_000, seven_day: 7 * 86_400_000 }
 
 /** At or above this percent used, the window is red whatever the pace. */
@@ -49,7 +53,7 @@ const levelOf = (used: number, projected: number | undefined): Level => {
 export const pace = (limit: SessionRateLimit, now: number): Pace => {
   const used = limit.percentUsed
   const resetsAt = limit.resetsAt === undefined ? Number.NaN : Date.parse(limit.resetsAt)
-  const length = WINDOW_MS[limit.kind]
+  const length = WINDOW_MS[baseOf(limit.kind)]
   let elapsed: number | undefined
   let projected: number | undefined
   let resetsInMs: number | undefined
@@ -64,7 +68,7 @@ export const pace = (limit: SessionRateLimit, now: number): Pace => {
 
   return {
     kind: limit.kind,
-    name: NAMES[limit.kind] ?? limit.kind,
+    name: nameOf(limit.kind),
     used,
     elapsed,
     projected,
@@ -78,7 +82,18 @@ export const duration = (ms: number) => {
   const days = Math.floor(minutes / 1440)
   const hours = Math.floor((minutes % 1440) / 60)
 
-  return days > 0 ? `${days}d ${hours}h` : hours > 0 ? `${hours}h ${minutes % 60}m` : `${minutes}m`
+  return days > 0 ? `${days}d${hours}h` : hours > 0 ? `${hours}h${minutes % 60}m` : `${minutes}m`
+}
+
+/** The windows the row always shows; any other (a model's weekly) shows once it leaves green. */
+export const isMain = (p: Pace) => p.kind === 'five_hour' || p.kind === 'seven_day'
+
+/** `used→projected` and the time to reset, as the row prints beside a bar. */
+export const brief = (p: Pace) => {
+  const projected = p.projected === undefined || p.level === 'red' ? '' : `→${Math.round(p.projected)}%`
+  const reset = p.resetsInMs === undefined ? '' : ` ↻${duration(p.resetsInMs)}`
+
+  return `${Math.round(p.used)}%${projected}${reset}`
 }
 
 export type Cell = { text: string; tone: 'fill' | 'empty' | 'mark' }

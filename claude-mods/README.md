@@ -5,18 +5,20 @@ Small Claude Code mods (function-hook plugins) that stay out of the way.
 | Mod | What it shows |
 | --- | --- |
 | `context-meter` | `Ctx  ████████░░░░░░░░░░░░ 42% · 84k of 200k tokens`; one toast when context passes 80%. |
-| `usage-meter` | One pace bar per limit window, e.g. `5h   ████████████┃░░░░░░░ 60% used · 50% through window · on pace to hit limit · resets in 2h 30m`. |
+| `usage-meter` | One row under `Ctx`: a pace bar per window, e.g. `Usg  5h ┃░░░░░░░░░░░ 1%→20% ↻4h55m  Wk █████████┃░░ 53%→66% ↻1d9h  Fable 100% ↻1d9h`. |
 
 ### Where they show
 
-- **Desktop Code tab and terminal:** a band directly above the prompt box, from the first reply of a session on (the figures arrive with each reply). Collapse it with its `[-]`.
+- **Desktop Code tab and terminal:** a band directly above the prompt box, `Ctx` on top and `Usg` under it, from the first reply of a session on (the figures arrive with each reply). Collapse it with its `[-]`.
 - **Terminal and mobile:** a status line under the prompt, e.g. `🟢 5h 30% → 60%  🟡 Week 40% → 88%`.
 - **Anywhere:** type `/usage-meter` or `/context-meter` for a text readout.
 
 ### Reading the usage bar
 
+In the desktop app the figures come from the app's own usage card (5-hour, weekly, and each model's weekly limit), re-read every few minutes; elsewhere from the session's rate-limit readings. A model's weekly limit joins the row only once it leaves green.
+
 The fill is how much of the limit you have used; the `┃` mark is how far through the window you are. Fill that stays left of the mark is under pace.
-`→ N% at reset` projects your use at reset if you keep the pace so far.
+`used→projected` is your use now and at reset if you keep the pace so far; `↻` is the time to reset.
 
 | Color | Meaning |
 | --- | --- |
