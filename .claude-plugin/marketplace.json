@@ -1,0 +1,8 @@
+{
+  "name": "agentic-extensions",
+  "owner": { "name": "Aaron Soto" },
+  "plugins": [
+    { "name": "context-meter", "source": "./claude-mods/context-meter", "description": "A quiet status line showing how full the context window is." },
+    { "name": "usage-meter", "source": "./claude-mods/usage-meter", "description": "A quiet status line showing plan rate-limit usage and session cost." }
+  ]
+}
