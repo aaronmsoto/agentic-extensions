@@ -29,5 +29,6 @@ test('the band draws the fill on terminal and desktop', async ($, on) => {
     expect(await ui.find({ type: 'Text', text: /42% · 84k of 200k tokens/ })).toBeDefined()
     await ui.unmount()
   }
-  expect(shown.at(-1)).toMatch(/%/)
+  // No status line: the band is the only display.
+  expect(shown.at(-1)).toBe(undefined)
 })

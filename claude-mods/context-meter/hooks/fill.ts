@@ -9,7 +9,6 @@ export const COLORS: Record<Level, string> = {
   red: '#f85149',
 }
 
-export const DOTS: Record<Level, string> = { green: '🟢', yellow: '🟡', orange: '🟠', red: '🔴' }
 
 /** Percent full from which each level starts. */
 export const YELLOW_FROM = 60

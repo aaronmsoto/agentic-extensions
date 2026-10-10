@@ -3,7 +3,7 @@ import type { EngineInterface, Register } from 'claude-code'
 
 import type { ContextReading } from '../types'
 
-import { COLORS, detail, DOTS, filledOf, levelOf, ORANGE_FROM, percentOf } from './fill'
+import { COLORS, detail, filledOf, levelOf, ORANGE_FROM, percentOf } from './fill'
 
 const live = atom({ plugin: 'context-meter', key: 'context' } as const, null)
 
@@ -14,13 +14,13 @@ let hasWarned = false
 async function record($: EngineInterface, context: ContextReading) {
   await update($, live, () => context)
 
+  // The band above the prompt is the one display; clear any line an older version pinned.
+  $.ui.status(undefined)
+
   const percent = percentOf(context)
   if (percent === undefined) {
-    $.ui.status(undefined)
-
     return
   }
-  $.ui.status(`${DOTS[levelOf(percent)]} Context ${percent}%`)
 
   if (percent >= ORANGE_FROM && !hasWarned) {
     hasWarned = true
