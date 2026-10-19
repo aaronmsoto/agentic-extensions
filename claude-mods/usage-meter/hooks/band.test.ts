@@ -141,7 +141,7 @@ test('the bars stretch so the row spans the band, less two spare columns', async
       props: { ...BAND.props, bodyColumns: columns },
     })
     const row = await ui.find({ key: 'usage-meter' })
-    const drawn = (row?.text ?? '').length + 2 // the gap between the two windows is a margin, not text
+    const drawn = (row?.text ?? '').length
     expect(drawn).toBeGreaterThanOrEqual(columns - 3)
     expect(drawn).toBeLessThanOrEqual(columns - 2)
     await ui.unmount()

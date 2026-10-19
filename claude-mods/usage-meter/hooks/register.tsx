@@ -156,41 +156,31 @@ export const register: Register = on => {
     const { Box, Text } = $.ui.resolve(e)
     // A window's segment: its name, a bar filled to the use with ┃ at how far into
     // the window you are, then used→projected at reset and the time to reset.
-    // One line, never wrapped: names and figures keep their width, and each bar, in a
-    // box clipped to one row, gives up columns first where the band is narrower.
-    const segment = (p: Pace, i: number) => (
-      <Box
-        key={`usage-${p.kind}`}
-        flexDirection="row"
-        flexWrap="nowrap"
-        flexGrow={isMain(p) ? 1 : 0}
-        flexShrink={isMain(p) ? 1 : 0}
-        minWidth={0}
-        marginRight={i < paces.length - 1 ? GAP : 0}
-      >
-        <Box flexShrink={0}>
-          <Text color={COLORS[p.level]} bold>
-            {p.name}{' '}
+    // One line, never wrapped, built as the Ctx row is: flat, with names and figures
+    // keeping their width and each bar, in a box clipped to one row, giving up columns first.
+    const cells = (p: Pace) => [
+      <Box flexShrink={0}>
+        <Text color={COLORS[p.level]} bold>
+          {p.name}{' '}
+        </Text>
+      </Box>,
+      isMain(p) && (
+        <Box flexGrow={1} flexShrink={1} minWidth={0} height={1} overflow="hidden">
+          <Text>
+            {bar(p, width).map(cell =>
+              cell.tone === 'empty' ? (
+                <Text dimColor>{cell.text}</Text>
+              ) : (
+                <Text color={cell.tone === 'mark' ? 'text' : COLORS[p.level]}>{cell.text}</Text>
+              ),
+            )}
           </Text>
         </Box>
-        {isMain(p) && (
-          <Box flexGrow={1} flexShrink={1} minWidth={0} height={1} overflow="hidden">
-            <Text>
-              {bar(p, width).map(cell =>
-                cell.tone === 'empty' ? (
-                  <Text dimColor>{cell.text}</Text>
-                ) : (
-                  <Text color={cell.tone === 'mark' ? 'text' : COLORS[p.level]}>{cell.text}</Text>
-                ),
-              )}
-            </Text>
-          </Box>
-        )}
-        <Box flexShrink={0}>
-          <Text color={COLORS[p.level]}> {brief(p)}</Text>
-        </Box>
-      </Box>
-    )
+      ),
+      <Box flexShrink={0}>
+        <Text color={COLORS[p.level]}> {brief(p)}</Text>
+      </Box>,
+    ]
     const mine = (
       <Box key="usage-meter" flexDirection="row" flexWrap="nowrap">
         <Box flexShrink={0}>
@@ -198,7 +188,14 @@ export const register: Register = on => {
             {'Usg'.padEnd(LABEL)}
           </Text>
         </Box>
-        {paces.map(segment)}
+        {paces.flatMap((p, i) => [
+          ...cells(p),
+          i < paces.length - 1 && (
+            <Box flexShrink={0}>
+              <Text>{' '.repeat(GAP)}</Text>
+            </Box>
+          ),
+        ])}
       </Box>
     )
 
